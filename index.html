@@ -1621,7 +1621,8 @@ ${marketContext}
 ${whoContext}
 ${whatContext}
 # 指示
-定義した「What（価値）」を顧客に届けるための具体的な「How（便益の提供方法）」を5個以上、箇条書きで提案してください。必ず2個以上はWEB広告の媒体を提案するように。また、読みやすくするため、各項目の文末（。）のあとには必ず改行を入れて、箇条書き形式で見やすく出力してください。`;
+定義した「What（価値）」を顧客に届けるための具体的な「How（便益の提供方法）」を5個以上、箇条書きで提案してください。必ず2個以上はWEB広告の媒体を提案するように。
+また、読みやすくするため、各項目の文末（。）のあとには必ず改行を入れて、箇条書き形式で見やすく出力してください。`;
 
             const schema = {
                 type: "OBJECT",
@@ -1683,8 +1684,14 @@ ${howContext}
             if (resultText) {
                 try {
                     const resultJson = JSON.parse(resultText);
+
+                    // 1. 状態と画面に値をセット
                     pyramidState.brandCharacter = resultJson.brandCharacter;
                     steps.b.output.value = resultJson.brandCharacter;
+
+                    // 2. 【追加】高さを自動調整する命令を実行
+                    autoResize(steps.b.output);
+
                     completeStep('b', steps.b.next);
                 } catch (e) { showMessage("データ解析エラー (B)。", true); }
             }
