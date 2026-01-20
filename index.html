@@ -906,7 +906,7 @@
                             <h4><i data-lucide="edit-3"></i>Step 1: 基礎情報の入力 (提案の「勝率」を高める準備)</h4>
                             <p class="mb-4 text-gray-700">
                                 ブランド・エクイティ・ピラミッドを作成して、提案内容を整理したり、受注率を高めるための「各情報」を入力するステップです。
-                                <br>全ての項目は任意入力で使用していただけます。入力内容が具体的であるほど、お客様に刺さる戦略骨子を生成しやすくなります。
+                                <br>全ての項目は任意入力で使用していただけます。入力内容が具体的であるほど、刺さる戦略骨子を作成しやすくなります。
                                 <br>できるだけ項目は埋めていただいた方が良いですが、必要最低限入力していただく形でも問題ございません。
                             </p>
                             <p class="mb-4 text-gray-700">左カラムの <strong class="text-indigo-600">[基本情報]</strong> タブと <strong class="text-indigo-600">[詳細情報]</strong> タブを入力します。</p>
@@ -938,7 +938,7 @@
 
                         <div class="step-outline border-indigo-200">
                             <h4><i data-lucide="layers"></i>Step 2: ピラミッドの構築 (戦略の「骨格」を最速で作成)</h4>
-                            <p class="mb-4 text-gray-700">Step 1の情報を元に、提案内容の参考となるブランド・ピラミッドを作り上げます。<br>ゼロから考える時間を短縮し、営業視点での「提案内容構築」に時間を活用することが可能です。</p>
+                            <p class="mb-4 text-gray-700">Step 1の情報を元に、提案内容の参考となるピラミッドを作り上げます。<br>ゼロから考える時間を短縮し、営業視点での「提案内容構築」に時間を活用することが可能です。</p>
                             
                             <ul>
                                 <li>
@@ -947,12 +947,12 @@
                                 </li>
                                 <li>
                                     <strong>アコーディオン内で「生成」:</strong>
-                                    <p>「生成」ボタンを押すと、提案のたたき台を作成します。<br>通常はM（市場）から順に生成しますが、アイデアが欲しい箇所から自由に生成することもできます。</p>
+                                    <p>「生成」ボタンを押すと、生成を開始します。<br>通常はM（市場）から順に生成しますが、アイデアが欲しい箇所から自由に生成することもできます。</p>
                                 </li>
                                 <li>
                                     <strong>「編集」して「再生成」</strong>
-                                    <p>生成された案をベースに、直接修正を加えることも可能。<br>
-                                    <strong>あなたが修正した内容は、次の階層の生成に反映されます。</strong> 自分の言葉で戦略をブラッシュアップすることも可能です。</p>
+                                    <p>生成された内容をベースに、直接修正を加えることも可能。<br>
+                                    <strong>修正した内容は、次の階層の生成に反映されます。</strong> 自分の言葉で戦略をブラッシュアップすることも可能です。</p>
                                 </li>
                                 <li>
                                     <strong>「リセット」と「CSVダウンロード」:</strong>
@@ -1514,7 +1514,7 @@
 # 前ステップの生成結果
 ${marketContext}
 # 指示
-上記情報に基づき、「Who（ターゲット）」を定義してください。
+上記情報に基づき、「Who（ターゲット）」を定義してください。また、読みやすくするため、文章が長くなる場合は句読点（。）で適切に改行を入れて出力してください。
 1. **strategyTarget (ST)**: 市場で最もボリュームが大きく勝てる層（デモグラフィック中心）。
 2. **coreTarget (CT)**: ブランドの価値に共鳴する層（サイコグラフィック・インサイト中心）。`;
             const schema = {
@@ -1530,9 +1530,27 @@ ${marketContext}
             if (resultText) {
                 try {
                     const resultJson = JSON.parse(resultText);
-                    pyramidState.who = { st: resultJson.strategyTarget, ct: resultJson.coreTarget };
-                    steps.wWho.outputST.value = resultJson.strategyTarget;
-                    steps.wWho.outputCT.value = resultJson.coreTarget;
+
+                    // 【変更点2】STとCT、それぞれの項目に対して改行処理を適用
+                    let formattedST = resultJson.strategyTarget;
+                    let formattedCT = resultJson.coreTarget;
+
+                    if (formattedST) {
+                        formattedST = formattedST.replace(/。/g, '。\n');
+                    }
+                    if (formattedCT) {
+                        formattedCT = formattedCT.replace(/。/g, '。\n');
+                    }
+
+                    // 状態(State)と画面(Value)の両方に、加工後の文章をセット
+                    pyramidState.who = { st: formattedST, ct: formattedCT };
+                    steps.wWho.outputST.value = formattedST;
+                    steps.wWho.outputCT.value = formattedCT;
+
+                    // 高さを自動調整
+                    autoResize(steps.wWho.outputST);
+                    autoResize(steps.wWho.outputCT);
+
                     completeStep('wWho', steps.wWho.next);
                 } catch (e) { showMessage("データ解析エラー (W-Who)。", true); }
             }
@@ -1547,7 +1565,7 @@ ${marketContext}
 ${marketContext}
 ${whoContext}
 # 指示
-上記情報に基づき、「What（価値）」を定義してください。
+上記情報に基づき、「What（価値）」を定義してください。また、読みやすくするため、文章が長くなる場合は句読点（。）で適切に改行を入れて出力してください。
 1. **benefit**: CTのインサイトに刺さる中核的な便益。
 2. **rtb**: そのBenefitを信じるに足る客観的な理由（製品特徴など）。`;
             const schema = {
@@ -1563,9 +1581,28 @@ ${whoContext}
             if (resultText) {
                 try {
                     const resultJson = JSON.parse(resultText);
-                    pyramidState.what = { benefit: resultJson.benefit, rtb: resultJson.rtb };
-                    steps.wWhat.outputBenefit.value = resultJson.benefit;
-                    steps.wWhat.outputRTB.value = resultJson.rtb;
+
+                    // BenefitとRTB、それぞれの項目に対して改行処理を適用
+                    let formattedBenefit = resultJson.benefit;
+                    let formattedRTB = resultJson.rtb;
+
+                    // 改行を1つ（\n）に設定。
+                    if (formattedBenefit) {
+                        formattedBenefit = formattedBenefit.replace(/。/g, '。\n');
+                    }
+                    if (formattedRTB) {
+                        formattedRTB = formattedRTB.replace(/。/g, '。\n');
+                    }
+
+                    // 状態(State)と画面(Value)の両方に、加工後の文章をセット
+                    pyramidState.what = { benefit: formattedBenefit, rtb: formattedRTB };
+                    steps.wWhat.outputBenefit.value = formattedBenefit;
+                    steps.wWhat.outputRTB.value = formattedRTB;
+
+                    // 追加：高さを自動調整
+                    autoResize(steps.wWhat.outputBenefit);
+                    autoResize(steps.wWhat.outputRTB);
+                    
                     completeStep('wWhat', steps.wWhat.next);
                 } catch (e) { showMessage("データ解析エラー (W-What)。", true); }
             }
@@ -1606,9 +1643,20 @@ ${whatContext}
 
                     pyramidState.how = resultJson.how;
                     steps.h.output.value = formattedHow;
+
+                    // 追加：高さを自動調整
+                    autoResize(steps.h.output);
+
                     completeStep('h', steps.h.next);
                 } catch (e) { showMessage("データ解析エラー (H)。", true); }
             }
+        }
+
+        // テキストエリアの高さを内容に合わせて自動調整する関数
+            function autoResize(textarea) {
+            if (!textarea) return;
+            textarea.style.height = 'auto'; // 一度高さをリセット
+            textarea.style.height = textarea.scrollHeight + 'px'; // 内容の高さ（scrollHeight）をセット
         }
 
         async function generateBrandCharacter() {
