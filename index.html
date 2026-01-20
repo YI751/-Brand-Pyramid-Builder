@@ -1666,14 +1666,19 @@ ${whatContext}
             const whoContext = `- W (Who):\n    - ST: ${pyramidState.who.st}\n    - CT: ${pyramidState.who.ct}`;
             const whatContext = `- W (What):\n    - Benefit: ${pyramidState.what.benefit}\n    - RTB: ${pyramidState.what.rtb}`;
             const howContext = `- H (How): ${pyramidState.how}`;
-            const prompt = `${getInputSummary()}
+
+             // 【変更点1】プロンプトに改行の指示を追加
+                const prompt = `${getInputSummary()}
 # 前ステップの生成結果
 ${marketContext}
 ${whoContext}
 ${whatContext}
 ${howContext}
 # 指示
-ピラミッド全体を体現する「Brand Character（ブランド人格）」と「スローガン」を定義してください。`;
+ピラミッド全体を体現する「Brand Character（ブランド人格）」と「スローガン」を定義してください。
+【重要：出力形式】
+読みやすくするため、文章が長くなる場合は句読点（。）で適切に改行を入れて出力してください。`;
+
             const schema = {
                 type: "OBJECT",
                 properties: { brandCharacter: { type: "STRING", description: "ブランド人格とスローガン" } },
@@ -1685,11 +1690,17 @@ ${howContext}
                 try {
                     const resultJson = JSON.parse(resultText);
 
-                    // 1. 状態と画面に値をセット
-                    pyramidState.brandCharacter = resultJson.brandCharacter;
-                    steps.b.output.value = resultJson.brandCharacter;
+                    // 【変更点2】改行処理（\n）を適用
+                    let formattedBrand = resultJson.brandCharacter;
+                    if (formattedBrand) {
+                        formattedBrand = formattedBrand.replace(/。/g, '。\n');
+                    }
 
-                    // 2. 【追加】高さを自動調整する命令を実行
+                    // 加工後の値をセット
+                    pyramidState.brandCharacter = formattedBrand;
+                    steps.b.output.value = formattedBrand;
+
+                    // 高さを自動調整
                     autoResize(steps.b.output);
 
                     completeStep('b', steps.b.next);
